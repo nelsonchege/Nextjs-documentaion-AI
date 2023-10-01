@@ -10,23 +10,41 @@ import { ColorRing } from "react-loader-spinner";
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const asAIQuestion = async (prompt: string) => {
+  const [AIresponse, setAIresponse] = useState(null);
+
+  //handles quering the vector database
+  const askAIQuestion = async (prompt: string) => {
+    setIsLoading(true);
     const payload = {
       prompt,
     };
-    const { data } = await axios.post("/api/subneddit", payload);
+
+    try {
+      const { data } = await axios.post("/api/read", payload);
+      setPrompt("");
+      setAIresponse(data.response);
+      toast.success("response found");
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+    setIsLoading(false);
   };
+
+  // handles creating indexes and embeddings
   const handleIndexandEmbeddings = async () => {
     setIsLoading(true);
-    const { data } = await axios.post("/api/setup");
-    console.log("data --->", data);
-    toast.success("Index created Successfull");
+    try {
+      await axios.post("/api/setup");
+      toast.success("Index created Successfull");
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
     setIsLoading(false);
   };
   return (
-    <main className="flex min-h-screen flex-col items-center p-24">
+    <main className="flex min-h-screen flex-col items-center p-5 sm:p-24">
       <h1 className=" font-extrabold text-2xl mb-3">nextjs documentation</h1>
-      <div className="w-2/3">
+      <div className="w-full sm:w-2/3">
         <form className="flex flex-col justify-center items-center gap-3">
           <Input
             type="text"
@@ -36,12 +54,20 @@ export default function Home() {
             onChange={(e) => setPrompt(e.target.value)}
           />
           <Button
-            onClick={() => asAIQuestion(prompt)}
-            className="mt-3 w-1/3 hover:bg-secondary hover:text-black hover:border hover:border-black transition duration-300 ease-in-out"
+            onClick={(e) => {
+              e.preventDefault();
+              askAIQuestion(prompt);
+            }}
+            className="mt-3 w-2/3 sm:w-1/3 hover:bg-secondary hover:text-black hover:border hover:border-black transition duration-300 ease-in-out"
           >
             Ask a question
           </Button>
         </form>
+        {AIresponse && (
+          <div className="mt-5 shadow-lg p-2 bg-white border border-gray-200 rounded-md">
+            {AIresponse}
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -59,7 +85,7 @@ export default function Home() {
       ) : (
         <Button
           disabled={isLoading}
-          className="mt-auto w-1/5 hover:bg-secondary hover:text-black hover:border hover:border-black"
+          className="mt-auto w-2/3 lg:w-1/5  hover:bg-secondary hover:text-black hover:border hover:border-black"
           onClick={() => handleIndexandEmbeddings()}
         >
           <span className="m-3">create Index and Embedings</span>
