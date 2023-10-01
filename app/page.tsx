@@ -83,9 +83,10 @@ export default function Home() {
           />
         </div>
       ) : (
+        // only shown in development,
         <Button
           disabled={isLoading}
-          className="mt-auto w-2/3 lg:w-1/5  hover:bg-secondary hover:text-black hover:border hover:border-black"
+          className="hidden mt-auto w-2/3 lg:w-1/5  hover:bg-secondary hover:text-black hover:border hover:border-black"
           onClick={() => handleIndexandEmbeddings()}
         >
           <span className="m-3">create Index and Embedings</span>
